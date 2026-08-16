@@ -9,12 +9,12 @@ import {
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCgq9_xbC2zMLV_gIrGlBnpryRN_toiHW4",
-  authDomain: "login-signup-auth-ks.firebaseapp.com",
-  projectId: "login-signup-auth-ks",
-  storageBucket: "login-signup-auth-ks.appspot.com",
-  messagingSenderId: "153852426357",
-  appId: "1:153852426357:web:0dace21431a9f096a2203c",
+  apiKey: "AIzaSyDRlqwY81mqavQw1CMCDyh5rfAyduNd4F4",
+  authDomain: "sandhis-interior-auth.firebaseapp.com",
+  projectId: "sandhis-interior-auth",
+  storageBucket: "sandhis-interior-auth.firebasestorage.app",
+  messagingSenderId: "973905100766",
+  appId: "1:973905100766:web:08561f8c256a43320ea74f"
 };
 
 const app = initializeApp(firebaseConfig);

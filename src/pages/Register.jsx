@@ -30,10 +30,13 @@ const Register = () => {
           console.log(userCredentials);
         })
         .catch((err) => {
+          console.error("Exact Firebase Error:", err.code, err.message);
+          
           if (err.code === "auth/email-already-in-use") {
             toast.error("Email already registered, login to continue");
           } else {
-            toast.error("Error occured, please try again");
+            // This will now pop up the REAL error reason instead of a generic message!
+            toast.error(err.message); 
           }
         });
     }

@@ -16,9 +16,15 @@ const Profile = () => {
       try {
         const q = query(collection(db, "users"), where("uid", "==", user?.uid));
         const doc = await getDocs(q);
-        const data = doc.docs[0].data();
-        console.log(data);
-        setUserDetails(data);
+        
+        // Safety check: Only read data if a document actually exists
+        if (!doc.empty) {
+          const data = doc.docs[0].data();
+          console.log(data);
+          setUserDetails(data);
+        } else {
+          console.log("No user profile found in the database yet.");
+        }
       } catch (err) {
         console.error(err);
         toast.error("An error occurred while fetching user data");
@@ -52,9 +58,9 @@ const Profile = () => {
       <h1 className="text-4xl mb-4 text-center">Profile Page</h1>
       <div className="border-[1px] border-gray-300" />
       <div className="flex flex-col justify-center bg-gray-100 p-3 sm:p-5 mt-5 rounded-xl ">
-        <div className="flex h-[150px] w-[150px]">
+       <div className="flex h-[150px] w-[150px]">
           <img
-            src={userDetails.img}
+            src={userDetails.img || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
             alt="user-img"
             className="rounded-full w-[100%] h-[100%] -mt-[1px] "
           />

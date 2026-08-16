@@ -1,17 +1,12 @@
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp, getDocs, query, where } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Link, useNavigate } from "react-router-dom";
 import { auth, db, logout, app } from "../firebase";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PopupModal from "./PopupModal.jsx";
+
 
 const initialState = {
   firstName: "",
@@ -23,10 +18,8 @@ const initialState = {
 
 const HomePage = () => {
   const [user, loading, error] = useAuthState(auth);
-  const [progress, setProgress] = useState(false);
   const [data, setData] = useState(initialState);
   const [isSubmit, setIsSubmit] = useState(false);
-  const [file, setFile] = useState(null);
   const { firstName, lastName, address, age, profession } = data;
   const navigate = useNavigate();
 
@@ -61,55 +54,30 @@ const HomePage = () => {
   };
 
   useEffect(() => {
-    const uploadFile = () => {
-      const storage = getStorage(app);
-      const storageRef = ref(storage, `images/${file.name}`);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setProgress(progress);
-          if (progress === 1) {
-            toast.success(`Uploading image`);
-          }
-          if (progress === 100) {
-            toast.success("Profile picture uploaded successfully");
-          }
-          console.log("Upload is " + progress + "% done");
-          switch (snapshot.state) {
-            case "paused":
-              toast.error("Upload is paused");
-              console.log("Upload is paused");
-              break;
-            case "running":
-              console.log("Upload is running");
-              break;
-            default:
-              break;
-          }
-        },
-        (error) => {
-          alert(error.message);
-          toast.error(`${error.message}`);
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            console.log("File available at", downloadURL);
-            setData((prev) => ({ ...prev, img: downloadURL }));
-          });
-        }
-      );
-    };
-    file && uploadFile();
-    if (loading) {
-      return;
-    }
+    if (loading) return;
     if (!user) {
       return navigate("/login");
     }
-  }, [user, loading, navigate, file]);
+
+    // Add this new function to check for existing data
+    const checkUserDocument = async () => {
+      try {
+        const q = query(collection(db, "users"), where("uid", "==", user.uid));
+        const docSnap = await getDocs(q);
+        
+        // If the query finds a document, skip the form and go to the profile!
+        if (!docSnap.empty) {
+          navigate("/profile");
+        }
+      } catch (error) {
+        console.error("Error checking for existing user document:", error);
+      }
+    };
+
+    // Run the check
+    checkUserDocument();
+    
+  }, [user, loading, navigate]);
 
   return (
     <div className="-z-10">
@@ -205,24 +173,12 @@ const HomePage = () => {
           </span>
         </label>
 
-        <div className="flex flex-col items-center justify-center gap-3 my-5 ">
-          <p className="font-medium">Choose your profile picture :</p>
-          <input
-            type="file"
-            onChange={(e) => setFile(e.target.files[0])}
-            className="ml-[80px]"
-          />
-        </div>
-        <button
+        
+       <button
           type="submit"
-          disabled={progress !== null && progress < 100}
-          className={`${
-            progress !== null && progress < 100
-              ? "bg-gray-300"
-              : "bg-violet-700  hover:bg-violet-800"
-          } text-white text-base w-[270px] h-[30] xs:w-[360px] xs:h-[40px] md:w-[450px] md:h-[50px] p-2 md:p-0 rounded-full transition my-3`}
+          className="bg-violet-700 hover:bg-violet-800 text-white text-base w-[270px] h-[30] xs:w-[360px] xs:h-[40px] md:w-[450px] md:h-[50px] p-2 md:p-0 rounded-full transition my-3"
         >
-          {progress > 1 && progress < 100 ? "Uploading" : "Submit"}
+          Submit
         </button>
         <ToastContainer />
       </form>
